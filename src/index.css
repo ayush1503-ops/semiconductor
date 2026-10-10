@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  background: #0a0a0f;
+}
+
+:root {
+  --background: #0a0a0f;
+  --foreground: #e0e0e0;
+  --card: #12121a;
+  --muted: #1c1c2e;
+  --muted-foreground: #6b7280;
+  --accent: #00ff88;
+  --accent-secondary: #ff00ff;
+  --accent-tertiary: #00d4ff;
+  --border: #2a2a3a;
+  --input: #12121a;
+  --ring: #00ff88;
+  --destructive: #ff3366;
+  --box-shadow-neon: 0 0 5px #00ff88, 0 0 10px #00ff8840;
+  --box-shadow-neon-sm: 0 0 3px #00ff88, 0 0 6px #00ff8830;
+  --box-shadow-neon-lg: 0 0 10px #00ff88, 0 0 20px #00ff8860, 0 0 40px #00ff8830;
+  --box-shadow-neon-secondary: 0 0 5px #ff00ff, 0 0 20px #ff00ff60;
+  --box-shadow-neon-tertiary: 0 0 5px #00d4ff, 0 0 20px #00d4ff60;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.cyber-root {
+  position: relative;
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 10% 10%, rgb(0 255 136 / 0.1), transparent 34%),
+    radial-gradient(circle at 90% 0%, rgb(255 0 255 / 0.1), transparent 32%),
+    radial-gradient(circle at 50% 100%, rgb(0 212 255 / 0.1), transparent 40%),
+    var(--background);
+  color: var(--foreground);
+}
+
+.cyber-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgb(0 0 0 / 0.32) 2px,
+    rgb(0 0 0 / 0.32) 4px
+  );
+  opacity: 0.22;
+}
+
+.cyber-root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  background-image:
+    linear-gradient(rgb(0 255 136 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 255 136 / 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.cyber-panel {
+  clip-path: polygon(
+    0 10px,
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+.cyber-panel-sm {
+  clip-path: polygon(
+    0 8px,
+    8px 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+}
+
+.cyber-heading {
+  font-family: "Orbitron", "Share Tech Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cyber-label {
+  font-family: "Share Tech Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.cyber-button {
+  min-height: 44px;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  background: transparent;
+  padding: 0.7rem 1.2rem;
+  font-family: "Share Tech Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  transition: all 120ms steps(4);
+}
+
+.cyber-button:hover {
+  background: var(--accent);
+  color: var(--background);
+  box-shadow: var(--box-shadow-neon-lg);
+}
+
+.cyber-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--ring),
+    0 0 0 5px rgb(10 10 15 / 0.9),
+    var(--box-shadow-neon-sm);
+}
+
+.cyber-button-secondary {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.cyber-button-secondary:hover {
+  background: var(--accent-secondary);
+  color: var(--background);
+  box-shadow: var(--box-shadow-neon-secondary);
+}
+
+.cyber-glitch {
+  position: relative;
+  animation: rgbShift 3s infinite;
+}
+
+.cyber-glitch::before,
+.cyber-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cyber-glitch::before {
+  text-shadow: -2px 0 var(--accent-secondary);
+  animation: glitchCutA 4s infinite;
+}
+
+.cyber-glitch::after {
+  text-shadow: 2px 0 var(--accent-tertiary);
+  animation: glitchCutB 4s infinite;
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.6ch;
+  margin-left: 0.2ch;
+  background: var(--accent);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes rgbShift {
+  0%,
+  100% {
+    text-shadow: -2px 0 #ff00ff, 2px 0 #00d4ff;
+  }
+  50% {
+    text-shadow: 2px 0 #ff00ff, -2px 0 #00d4ff;
+  }
+}
+
+@keyframes glitchCutA {
+  0%,
+  90%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: translate(0);
+  }
+  91% {
+    clip-path: inset(10% 0 70% 0);
+    transform: translate(-2px, 1px);
+  }
+  94% {
+    clip-path: inset(60% 0 8% 0);
+    transform: translate(1px, -1px);
+  }
+}
+
+@keyframes glitchCutB {
+  0%,
+  88%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: translate(0);
+  }
+  89% {
+    clip-path: inset(72% 0 5% 0);
+    transform: translate(2px, -1px);
+  }
+  93% {
+    clip-path: inset(5% 0 76% 0);
+    transform: translate(-1px, 1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cyber-glitch,
+  .cyber-glitch::before,
+  .cyber-glitch::after,
+  .cursor,
+  .motion-safe {
+    animation: none !important;
+    transition: none !important;
+  }
+}
