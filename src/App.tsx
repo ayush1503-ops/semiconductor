@@ -1,592 +1,728 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { TerminalHeader } from "./components/TerminalHeader";
+import { InquiryDialog } from "./components/InquiryDialog";
+import { AudiencePaths } from "./components/AudiencePaths";
+import { ProgramOverview } from "./components/ProgramOverview";
+import { ResourceLibrary } from "./components/ResourceLibrary";
+import { TrainingDetails } from "./components/TrainingDetails";
+import { ToolsOverview, CareerGuidance } from "./components/ToolsAndCareers";
+import { PreviewNotices } from "./components/PreviewNotices";
+import { faqs, tracks } from "./content/site";
+import type { InquiryType } from "./content/site";
 
-type Feature = {
-  title: string;
-  description: string;
-};
-
-const navItems = ["About", "Technology", "Proof", "Pricing", "FAQ"];
-
-const trustedBy = ["Founded 2020", "11-50 employees", "Paris, Ile-de-France", "Privately Held", "6,967 followers"];
-
-const features: Feature[] = [
-  {
-    title: "Ultrasensitive Detection System",
-    description:
-      "Chipiron states its patented cryogenic detection system can acquire MRI signals in open environments with up to 10x SNR improvement over room-temperature chains.",
-  },
-  {
-    title: "AI Noise Cancellation",
-    description:
-      "The team publicly describes using linear and non-linear active noise cancellation strategies for ultra-low-field MRI signal quality.",
-  },
-  {
-    title: "Optimized Magnet + Gradient Design",
-    description:
-      "Chipiron highlights low-footprint magnet engineering designed for clinical accuracy without requiring conventional shielding constraints.",
-  },
-  {
-    title: "Low-Field Reconstruction Pipeline",
-    description:
-      "Their public roadmap references unconventional low-field sequence and reconstruction work for clinically relevant acquisition times.",
-  },
+const navItems = [
+  ["About", "about"],
+  ["Courses", "courses"],
+  ["Why Chiprion", "why-chiprion"],
+  ["For teams", "training"],
+  ["FAQ", "faq"],
 ];
-
-const benefitPoints = [
-  "Mission: make MRI 100x more accessible for earlier screening and check-ins.",
-  "Company positioning: building a light, inexpensive MRI machine without compromising image quality.",
-  "Sector from LinkedIn: Medical Equipment Manufacturing.",
+const values = [
+  "Industry-oriented learning",
+  "Hands-on projects",
+  "Mentor guidance",
+  "Career preparation",
 ];
-
-const testimonials = [
-  {
-    quote:
-      "Shaping the future of Healthcare by building the next-gen of MRI machines.",
-    name: "Chipiron LinkedIn Headline",
-    role: "Public company profile statement",
-  },
-  {
-    quote:
-      "Chipiron has closed a $17M Series A round from top-tier investors to accelerate the deployment of its disruptive MRI technology worldwide.",
-    name: "Chipiron News",
-    role: "Public website update, April 2025",
-  },
-  {
-    quote:
-      "Chipiron won the 'Innovation of the Year' award at VivaTech 2025, 1st place out of 600 startups.",
-    name: "Chipiron News",
-    role: "Public website update, June 2025",
-  },
+const steps = [
+  [
+    "Choose your track",
+    "Match your background and goals to a semiconductor learning path.",
+  ],
+  [
+    "Learn the fundamentals",
+    "Build a clear understanding of the concepts behind the tools.",
+  ],
+  [
+    "Build projects",
+    "Apply your learning through practical, application-oriented work.",
+  ],
+  [
+    "Prepare for interviews",
+    "Connect your technical understanding to career and interview preparation.",
+  ],
 ];
-
-const faqs = [
-  {
-    question: "What should I expect during the hiring process?",
-    answer:
-      "Chipiron describes a process with HR screening, hiring manager interview, technical assessment or case study, and a culture conversation with the CEO.",
-  },
-  {
-    question: "Where is the team based?",
-    answer:
-      "Chipiron lists headquarters in Paris, Ile-de-France. Its site describes 'The Ark' in Paris 19th arrondissement as HQ and lab.",
-  },
-  {
-    question: "What culture points are publicly listed?",
-    answer:
-      "Public FAQ mentions a transparent salary grid, international team composition, unlimited paid holidays, and values centered on passion, courage, and determination.",
-  },
-  {
-    question: "Is remote work available?",
-    answer:
-      "Chipiron states flexible working hours are available, while lab-heavy roles require more onsite presence due to hardware development.",
-  },
-];
-
-const riseIn = {
-  hidden: { opacity: 0, y: 26 },
-  visible: { opacity: 1, y: 0 },
-};
+const panel = "cyber-panel border border-[var(--border)] bg-[var(--card)] p-6";
+const section = "mx-auto max-w-7xl px-5 py-24 sm:px-8";
 
 export default function App() {
-  const [annualBilling, setAnnualBilling] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [domain, setDomain] = useState("All tracks");
+  const [activeTrack, setActiveTrack] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  const pricing = [
-    {
-      name: "Discovery",
-      description: "For institutions exploring partner pilots",
-      monthly: "Custom",
-      yearly: "Custom",
-      cta: "Request Details",
-      highlights: ["Public documentation review", "Roadmap and mission briefing", "Initial fit discussion"],
-    },
-    {
-      name: "Pilot",
-      description: "For healthcare systems evaluating deployment",
-      monthly: "Custom",
-      yearly: "Custom",
-      cta: "Start Conversation",
-      highlights: ["Clinical and technical scoping", "Regulatory pathway context", "Team workshop session"],
-    },
-    {
-      name: "Strategic",
-      description: "For long-term commercialization partnerships",
-      monthly: "Custom",
-      yearly: "Custom",
-      cta: "Book Meeting",
-      highlights: ["Partner-led planning", "Joint milestone design", "Executive collaboration"],
-    },
-  ];
+  const [request, setRequest] = useState<{
+    type: InquiryType;
+    track?: string;
+  } | null>(null);
+  const filtered = tracks.filter(
+    (track) =>
+      (domain === "All tracks" || track.domain === domain) &&
+      `${track.name} ${track.description} ${track.topics.join(" ")}`
+        .toLowerCase()
+        .includes(query.toLowerCase()),
+  );
+  const inquire = (type: InquiryType, track?: string) => {
+    setMenuOpen(false);
+    setRequest({ type, track });
+  };
 
   return (
-    <div className="cyber-root antialiased selection:bg-[#00ff88] selection:text-[#0a0a0f]">
-      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[#0a0a0f]/85 backdrop-blur-md">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <a href="#" className="flex items-center gap-3 text-base text-[var(--foreground)]">
+    <div className="cyber-root antialiased">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/95 backdrop-blur-md">
+        <nav
+          aria-label="Main navigation"
+          className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4 sm:px-8"
+        >
+          <a
+            href="#"
+            aria-label="Chiprion home"
+            className="flex items-center gap-3"
+          >
             <img
               src="/images/chiprion-logo.png"
-              alt="Chiprion logo"
-              className="h-9 w-9 border border-[var(--border)] bg-black object-contain p-0.5"
+              alt=""
+              className="h-9 w-9 border border-[var(--border)] object-contain"
             />
-            <span className="cyber-heading text-sm font-bold tracking-[0.28em]">Chipiron</span>
+            <span className="brand-name">Chiprion</span>
           </a>
-          <ul className="hidden items-center gap-8 text-xs text-[var(--muted-foreground)] lg:flex">
-            {navItems.map((item) => (
-              <li key={item}>
-                <a href={`#${item.toLowerCase()}`} className="cyber-label transition hover:text-[var(--accent)]">
-                  {item}
+          <ul className="hidden items-center gap-6 text-xs text-[var(--text-secondary)] lg:flex">
+            {navItems.map(([label, id]) => (
+              <li key={id}>
+                <a
+                  href={`#${id}`}
+                  className="cyber-label hover:text-[var(--accent)]"
+                >
+                  {label}
                 </a>
               </li>
             ))}
           </ul>
-          <a href="#cta" className="cyber-panel-sm cyber-button text-[11px]">Contact Team</a>
-        </nav>
-      </header>
-
-      <main>
-        <section className="relative overflow-hidden border-b border-[var(--border)]">
-          <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=2500&q=80"
-              alt="MRI scanner environment"
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0ff2] via-[#0a0a0fd9] to-[#0a0a0ff2]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,rgba(0,255,136,0.22),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(255,0,255,0.18),transparent_38%)]" />
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="relative mx-auto grid min-h-[90vh] max-w-7xl items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[1.4fr_1fr]"
-          >
-            <div className="max-w-4xl space-y-8">
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="cyber-label inline-flex border border-[var(--border)] bg-black/40 px-4 py-1.5 text-[11px] text-[var(--accent-tertiary)]"
-              >
-                LinkedIn Source Data Applied
-              </motion.p>
-              <motion.h1
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.2 }}
-                className="cyber-heading cyber-glitch text-5xl font-black leading-[1.04] text-white drop-shadow-[0_0_10px_rgba(0,255,136,0.5)] sm:text-6xl lg:text-7xl"
-                data-text="Chipiron"
-              >
-                Chipiron
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-                className="max-w-2xl text-base leading-relaxed tracking-wide text-[#d4d4d8] sm:text-lg"
-              >
-                We are building the first light, inexpensive MRI machine that works at an ultra-low magnetic
-                field without compromising on image quality. Mission: make MRI 100x more accessible.
-                <span className="cursor" />
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.4 }}
-                className="flex flex-wrap items-center gap-3"
-              >
-                <a href="#pricing" className="cyber-panel-sm cyber-button text-xs">Request Pricing</a>
-                <a href="#technology" className="cyber-panel-sm cyber-button cyber-button-secondary text-xs">
-                  Explore Technology
-                </a>
-              </motion.div>
-            </div>
-
-            <motion.aside
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.45 }}
-              className="cyber-panel hidden border border-[var(--accent)] bg-black/55 p-6 shadow-[var(--box-shadow-neon)] backdrop-blur-sm lg:block"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => inquire("Free demo")}
+              className="cyber-panel-sm cyber-button text-[11px]"
             >
-              <p className="cyber-label mb-4 text-[11px] text-[var(--accent)]">System Terminal</p>
-              <ul className="space-y-2 text-sm text-[#d4d4d8]">
-                <li>&gt; Industry: Medical Equipment Manufacturing</li>
-                <li>&gt; Headquarters: Paris, Ile-de-France</li>
-                <li>&gt; Company size: 11-50 employees</li>
-                <li>&gt; Type: Privately Held</li>
-                <li>&gt; Founded: 2020</li>
-              </ul>
-            </motion.aside>
-          </motion.div>
-
-          <motion.div
-            aria-hidden
-            animate={{ y: [0, -14, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="motion-safe pointer-events-none absolute -bottom-28 right-[-80px] h-72 w-72 rounded-full bg-[#00ff88]/20 blur-3xl"
-          />
-        </section>
-
-        <section id="about" className="border-b border-[var(--border)] bg-[#0f0f17] py-10">
-          <div className="mx-auto max-w-7xl px-5 sm:px-8">
-            <p className="cyber-label mb-6 text-center text-[11px] text-[var(--muted-foreground)]">Public profile signals</p>
-            <div className="overflow-hidden">
-              <motion.div
-                className="flex w-max gap-10 text-lg text-[#cbd5e1]"
-                animate={{ x: [0, -520] }}
-                transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+              <span className="hidden sm:inline">Book free demo</span>
+              <span className="sm:hidden">Free demo</span>
+            </button>
+            <button
+              className="cyber-menu-button lg:hidden"
+              aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              {menuOpen ? "×" : "☰"}
+            </button>
+          </div>
+        </nav>
+        {menuOpen && (
+          <nav
+            id="mobile-nav"
+            aria-label="Mobile navigation"
+            className="cyber-mobile-nav lg:hidden"
+          >
+            {navItems.map(([label, id]) => (
+              <a
+                key={id}
+                aria-label={label}
+                href={`#${id}`}
+                onClick={() => setMenuOpen(false)}
               >
-                {[...trustedBy, ...trustedBy].map((name, index) => (
-                  <span key={`${name}-${index}`} className="cyber-heading text-base font-semibold tracking-[0.15em] text-[#d1fae5]">
-                    {name}
-                  </span>
+                {label}
+              </a>
+            ))}
+          </nav>
+        )}
+      </header>
+      <main id="main">
+        <section className="relative overflow-hidden border-b border-[var(--border)]">
+          <div className="hero-circuits" aria-hidden="true">
+            <svg viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid slice">
+              <g fill="none" stroke="currentColor" strokeWidth="1">
+                <path d="M0 110h260l90 90h170M0 500h230l90-90h200M1000 180H830l-70 70H650M1000 540H810l-90-90H650M550 0v130m55 520V500" />
+                <rect x="480" y="230" width="180" height="180" />
+                <rect x="510" y="260" width="120" height="120" />
+                {Array.from({ length: 8 }, (_, i) => (
+                  <path
+                    key={i}
+                    d={`M${490 + i * 22} 210v20M${490 + i * 22} 410v20M460 ${242 + i * 22}h20M660 ${242 + i * 22}h20`}
+                  />
                 ))}
-              </motion.div>
+              </g>
+            </svg>
+          </div>
+          <div className="relative mx-auto grid min-h-[85vh] max-w-7xl items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[1.5fr_1fr]">
+            <div className="space-y-8">
+              <p className="cyber-label inline-flex border border-[var(--border)] bg-black/30 px-4 py-2 text-[11px] text-[var(--accent-tertiary)]">
+                Precision training for chip engineers
+              </p>
+              <h1 className="cyber-heading hero-heading font-bold">
+                Build industry-ready skills in{" "}
+                <span className="text-[var(--accent)]">
+                  VLSI & semiconductor design.
+                </span>
+              </h1>
+              <p className="max-w-2xl text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg">
+                Practical training in chip design, verification, physical
+                design, and embedded systems—with hands-on projects and expert
+                mentorship.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => inquire("Free demo")}
+                  className="cyber-panel-sm cyber-button text-xs"
+                >
+                  Book free demo
+                </button>
+                <a
+                  href="#courses"
+                  className="cyber-panel-sm cyber-button cyber-button-secondary text-xs"
+                >
+                  Explore courses
+                </a>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)]">
+                For students, working engineers, and career switchers.
+              </p>
             </div>
+            <aside
+              className={`${panel} hidden border-[var(--accent)]/40 shadow-[var(--box-shadow-neon)] lg:block`}
+            >
+              <TerminalHeader title="Your learning roadmap" />
+              <ul className="space-y-4 text-sm text-[var(--text-secondary)]">
+                {[
+                  "Build strong fundamentals",
+                  "Explore chip-design workflows",
+                  "Apply concepts through projects",
+                  "Learn with mentor guidance",
+                  "Prepare for your next career step",
+                ].map((line) => (
+                  <li key={line}>
+                    <span className="text-[var(--accent)]" aria-hidden="true">
+                      &gt;{" "}
+                    </span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <p className="cyber-label mt-7 border-t border-[var(--border)] pt-5 text-[10px] text-[var(--accent-tertiary)]">
+                Learn / Apply / Build
+              </p>
+            </aside>
           </div>
         </section>
-
-        <section id="technology" className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
-          <motion.div
-            variants={riseIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6 }}
-            className="mb-14 max-w-3xl space-y-4"
-          >
-            <p className="cyber-label text-[11px] text-[var(--accent)]">Technology</p>
-            <h2 className="cyber-heading text-4xl font-bold leading-tight text-white sm:text-5xl">
-              Engineering stack from public Chipiron disclosures.
-            </h2>
-            <p className="text-[#a1a1aa]">
-              This page uses statements from the public LinkedIn profile and Chipiron website content instead
-              of generated claims.
+        <section
+          id="about"
+          className="border-b border-[var(--border)] bg-[var(--card)] py-10"
+        >
+          <div className="mx-auto max-w-7xl px-5 sm:px-8">
+            <p className="cyber-label mb-6 text-center text-[11px] text-[var(--text-secondary)]">
+              Practical learning. Clear purpose.
             </p>
-          </motion.div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                variants={riseIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-                className="cyber-panel group border border-[var(--border)] bg-[var(--card)]/90 p-6 transition hover:border-[var(--accent)] hover:shadow-[var(--box-shadow-neon-sm)]"
+            <div className="grid grid-cols-2 gap-5 text-center md:grid-cols-4">
+              {values.map((value) => (
+                <p key={value} className="trust-value">
+                  {value}
+                </p>
+              ))}
+            </div>
+            <p className="mx-auto mt-8 max-w-3xl text-center text-sm leading-relaxed text-[var(--text-secondary)]">
+              Chiprion bridges the gap between academic learning and
+              semiconductor industry requirements through practical training,
+              projects, tool exposure, and mentorship.
+            </p>
+            <AudiencePaths />
+          </div>
+        </section>
+        <section id="courses" className={section}>
+          <div id="learning-tracks" />
+          <div className="mb-10 max-w-3xl space-y-4">
+            <p className="cyber-label text-xs text-[var(--accent)]">
+              Courses & learning tracks
+            </p>
+            <h2 className="cyber-heading text-4xl font-semibold sm:text-5xl">
+              Find your path into semiconductor engineering.
+            </h2>
+            <p className="text-[var(--text-secondary)]">
+              Explore the training areas in Chiprion’s project brief. These are
+              learning-track overviews; final curricula, tools, duration, fees,
+              and delivery modes are awaiting confirmation.
+            </p>
+          </div>
+          <div className="course-filters">
+            <label>
+              Search learning tracks
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search RTL, UVM, embedded…"
+              />
+            </label>
+            <label>
+              Domain
+              <select
+                aria-label="Domain"
+                value={domain}
+                onChange={(event) => setDomain(event.target.value)}
               >
-                <h3 className="cyber-heading text-xl font-semibold text-white transition group-hover:text-[var(--accent)]">
-                  {feature.title}
+                <option>All tracks</option>
+                {tracks.map((track) => (
+                  <option key={track.id}>{track.domain}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {filtered.map((track) => (
+              <article key={track.id} className={`${panel} course-card`}>
+                <div className="mb-5 flex justify-between">
+                  <span className="cyber-label text-[10px] text-[var(--accent-tertiary)]">
+                    {track.domain}
+                  </span>
+                  <span className="cyber-label text-[10px] text-[var(--text-secondary)]">
+                    Track / 0{tracks.indexOf(track) + 1}
+                  </span>
+                </div>
+                <h3 className="cyber-heading text-2xl font-semibold">
+                  {track.name}
                 </h3>
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#b4b4be]">{feature.description}</p>
-              </motion.div>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {track.description}
+                </p>
+                <p className="mt-4 text-xs text-[var(--text-secondary)]">
+                  Schedule, level & mode: to be confirmed
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    className="cyber-panel-sm cyber-button text-[11px]"
+                    aria-expanded={activeTrack === track.id}
+                    aria-controls={`track-${track.id}`}
+                    onClick={() =>
+                      setActiveTrack(activeTrack === track.id ? null : track.id)
+                    }
+                  >
+                    {activeTrack === track.id
+                      ? "Hide overview"
+                      : "View details"}
+                  </button>
+                  <button
+                    className="cyber-panel-sm cyber-button cyber-button-secondary text-[11px]"
+                    onClick={() => inquire("Course inquiry", track.name)}
+                  >
+                    Enquire now
+                  </button>
+                </div>
+                <div
+                  id={`track-${track.id}`}
+                  hidden={activeTrack !== track.id}
+                  className="track-detail"
+                >
+                  <ProgramOverview
+                    track={track}
+                    onRequest={() => inquire("Syllabus / brochure", track.name)}
+                  />
+                </div>
+              </article>
             ))}
           </div>
+          {!filtered.length && (
+            <div className={`${panel} mt-4`} role="status">
+              <p>No tracks match your search.</p>
+              <button
+                className="mt-4 text-[var(--accent)]"
+                onClick={() => {
+                  setQuery("");
+                  setDomain("All tracks");
+                }}
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
         </section>
-
-        <section id="proof" className="relative overflow-hidden border-y border-[var(--border)] bg-[#0d0d15] py-24">
-          <motion.div
-            aria-hidden
-            animate={{ opacity: [0.45, 0.8, 0.45] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="motion-safe absolute left-[-120px] top-14 h-80 w-80 rounded-full bg-[#ff00ff]/20 blur-3xl"
-          />
-          <div className="relative mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-            <motion.div
-              variants={riseIn}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-5"
-            >
-              <p className="cyber-label text-[11px] text-[var(--accent-secondary)]">Product showcase</p>
-              <h2 className="cyber-heading text-4xl font-bold leading-tight text-white sm:text-5xl">
-                Compact, inexpensive and comfortable MRI direction.
-              </h2>
-              <p className="text-[#b4b4be]">
-                LinkedIn and website messaging align on one core objective: improve accessibility to MRI and enable
-                earlier detection workflows.
+        <section
+          id="learning"
+          className="border-y border-[var(--border)] bg-[var(--card)] py-24"
+        >
+          <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[1fr_1.2fr] lg:items-center">
+            <div className="space-y-5">
+              <p className="cyber-label text-xs text-[var(--accent-secondary)]">
+                How it works
               </p>
-            </motion.div>
-
-            <motion.div
-              variants={riseIn}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className="cyber-panel border border-[var(--accent-tertiary)]/40 bg-black/50 p-4 shadow-[var(--box-shadow-neon-tertiary)] backdrop-blur"
-            >
-              <div className="cyber-panel-sm border border-[var(--border)] bg-[#0a0a0f] p-6">
-                <div className="mb-5 flex items-center justify-between">
-                  <p className="cyber-label text-[11px] text-[#9ca3af]">Roadmap markers</p>
-                  <span className="cyber-panel-sm border border-[var(--accent)]/40 px-3 py-1 text-[11px] text-[var(--accent)]">
-                    2025 -&gt; 2028
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { label: "Series A announced", value: 80 },
-                    { label: "Device verification milestone", value: 62 },
-                    { label: "Clinical + FDA roadmap", value: 45 },
-                  ].map((item, index) => (
-                    <div key={item.label} className="space-y-1.5">
-                      <div className="flex justify-between text-xs text-[#9ca3af]">
-                        <span>{item.label}</span>
-                        <span>{item.value}%</span>
-                      </div>
-                      <div className="h-2 overflow-hidden bg-white/10">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${item.value}%` }}
-                          viewport={{ once: true, amount: 0.6 }}
-                          transition={{ duration: 0.7, delay: index * 0.12 }}
-                          className="h-full bg-gradient-to-r from-[#00ff88] via-[#00d4ff] to-[#ff00ff]"
-                        />
-                      </div>
+              <h2 className="cyber-heading text-4xl font-semibold sm:text-5xl">
+                From fundamentals to practical confidence.
+              </h2>
+              <p className="text-[var(--text-secondary)]">
+                Build understanding first. Then apply it. Chiprion’s approach
+                connects technical concepts, hands-on practice, and career
+                preparation.
+              </p>
+            </div>
+            <div className={`${panel} border-[var(--accent-tertiary)]/40`}>
+              <TerminalHeader title="Learning sequence" />
+              <ol className="space-y-6">
+                {steps.map(([title, text], i) => (
+                  <li key={title} className="flex gap-4">
+                    <span className="cyber-label text-sm text-[var(--accent)]">
+                      0{i + 1}
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-semibold">{title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">
+                        {text}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </section>
-
-        <section className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
-          <motion.div
-            variants={riseIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6 }}
-            className="grid gap-8 lg:grid-cols-2"
-          >
+        <section id="why-chiprion" className={section}>
+          <div className="grid gap-8 lg:grid-cols-2">
             <div className="space-y-4">
-              <p className="cyber-label text-[11px] text-[var(--accent-tertiary)]">Benefits</p>
-              <h2 className="cyber-heading text-4xl font-bold leading-tight text-white sm:text-5xl">
-                Verifiable company facts in one conversion-ready narrative.
+              <p className="cyber-label text-xs text-[var(--accent-tertiary)]">
+                Why Chiprion
+              </p>
+              <h2 className="cyber-heading text-4xl font-semibold sm:text-5xl">
+                Learn the concepts.
+                <br />
+                Build the skills.
               </h2>
             </div>
             <div className="space-y-5">
-              {benefitPoints.map((point, index) => (
-                <motion.p
-                  key={point}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="border-b border-[var(--border)] pb-4 text-[#b4b4be]"
+              {[
+                [
+                  "Industry-oriented curriculum",
+                  "Connect your learning to the workflows used in semiconductor engineering.",
+                ],
+                [
+                  "Hands-on projects & tool exposure",
+                  "Practice applying concepts, rather than only memorizing theory.",
+                ],
+                [
+                  "Mentor guidance",
+                  "Build understanding with expert guidance and feedback.",
+                ],
+                [
+                  "Career support",
+                  "Prepare for technical discussions and interviews—without unrealistic placement promises.",
+                ],
+              ].map(([title, text]) => (
+                <div
+                  key={title}
+                  className="border-b border-[var(--border)] pb-5"
                 >
-                  &gt; {point}
-                </motion.p>
+                  <h3 className="text-lg font-semibold">
+                    <span className="text-[var(--accent)]" aria-hidden="true">
+                      &gt;{" "}
+                    </span>
+                    {title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+                    {text}
+                  </p>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
+          <ToolsOverview />
         </section>
-
-        <section className="bg-[#0f0f17] py-24">
+        <section id="mentors" className="bg-[var(--card)] py-24">
           <div className="mx-auto max-w-7xl px-5 sm:px-8">
-            <motion.h2
-              variants={riseIn}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6 }}
-              className="cyber-heading mb-12 max-w-3xl text-4xl font-bold text-white sm:text-5xl"
-            >
-              Public statements and milestones from Chipiron channels.
-            </motion.h2>
-            <div className="space-y-8">
-              {testimonials.map((item, index) => (
-                <motion.figure
-                  key={item.name}
-                  variants={riseIn}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.55, delay: index * 0.08 }}
-                  className="cyber-panel border border-[var(--border)] bg-[#12121a]/90 px-6 py-7"
+            <p className="cyber-label mb-4 text-xs text-[var(--accent)]">
+              Mentorship & student outcomes
+            </p>
+            <h2 className="cyber-heading mb-10 max-w-3xl text-4xl font-semibold sm:text-5xl">
+              Guidance that helps you move forward.
+            </h2>
+            <div className="space-y-6">
+              <article className={panel}>
+                <h3 className="cyber-heading text-2xl font-semibold">
+                  Learn with expert mentorship
+                </h3>
+                <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
+                  Mentor guidance is central to Chiprion’s training approach.
+                  Named profiles, qualifications, experience, and industry
+                  backgrounds will be published after the team supplies and
+                  approves them.
+                </p>
+              </article>
+              <article id="student-success" className={panel}>
+                <h3 className="cyber-heading text-2xl font-semibold">
+                  Real stories. Verified outcomes.
+                </h3>
+                <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
+                  Student testimonials and career-transition stories will appear
+                  here only with consent and approved details. We do not publish
+                  invented learners, hiring partners, placement rates, or job
+                  guarantees.
+                </p>
+              </article>
+              <CareerGuidance onRequest={() => inquire("Counseling")} />
+              <ResourceLibrary />
+            </div>
+          </div>
+        </section>
+        <section id="training" className={section}>
+          <div className="mb-10 max-w-3xl space-y-4">
+            <p className="cyber-label text-xs text-[var(--accent)]">
+              Training for every next step
+            </p>
+            <h2 className="cyber-heading text-4xl font-semibold sm:text-5xl">
+              For learners, colleges, and engineering teams.
+            </h2>
+            <p className="text-[var(--text-secondary)]">
+              Discuss your goals and training requirements. Program scope, fees,
+              schedules, and delivery formats are confirmed with the Chiprion
+              team.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              {
+                title: "Students & engineers",
+                type: "Counseling" as const,
+                desc: "Build a learning path around your background and career interests.",
+                points: [
+                  "Track-selection guidance",
+                  "Practical learning & projects",
+                  "Interview preparation",
+                ],
+                cta: "Talk to a counselor",
+              },
+              {
+                title: "For colleges",
+                type: "College training" as const,
+                desc: "Connect academic learning with practical semiconductor skills.",
+                points: [
+                  "Student workshops",
+                  "Faculty development",
+                  "Project & curriculum support",
+                ],
+                cta: "Discuss college training",
+              },
+              {
+                title: "Corporate training",
+                type: "Corporate training" as const,
+                desc: "Discuss a tailored training plan for your engineering team.",
+                points: [
+                  "Custom curriculum options",
+                  "Domain-focused upskilling",
+                  "Delivery format by agreement",
+                ],
+                cta: "Request a proposal",
+              },
+            ].map((item) => (
+              <article key={item.title} className={`${panel} flex flex-col`}>
+                <h3 className="cyber-heading text-2xl font-semibold">
+                  {item.title}
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {item.desc}
+                </p>
+                <ul className="my-6 space-y-3 text-sm">
+                  {item.points.map((point) => (
+                    <li key={point}>
+                      <span aria-hidden="true" className="text-[var(--accent)]">
+                        &gt;{" "}
+                      </span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  className="cyber-panel-sm cyber-button mt-auto w-full text-[11px]"
+                  onClick={() => inquire(item.type)}
                 >
-                  <blockquote className="text-lg text-[#e4e4e7] sm:text-xl">"{item.quote}"</blockquote>
-                  <figcaption className="mt-4 text-sm text-[#9ca3af]">
-                    <span className="font-medium text-[var(--accent)]">{item.name}</span> - {item.role}
-                  </figcaption>
-                </motion.figure>
+                  {item.cta}
+                </button>
+              </article>
+            ))}
+          </div>
+          <TrainingDetails onRequest={inquire} />
+        </section>
+        <section
+          id="faq"
+          className="border-y border-[var(--border)] bg-[var(--card)] py-24"
+        >
+          <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="space-y-4">
+              <p className="cyber-label text-xs text-[var(--accent-tertiary)]">
+                FAQ
+              </p>
+              <h2 className="cyber-heading text-4xl font-semibold sm:text-5xl">
+                Clear answers.
+                <br />A confident next step.
+              </h2>
+              <p className="text-[var(--text-secondary)]">
+                Understand the tracks, expectations, and what to confirm before
+                you enroll.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {faqs.map((faq, i) => (
+                <div key={faq.question} className={`${panel} !p-0`}>
+                  <h3>
+                    <button
+                      className="flex min-h-14 w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-medium"
+                      id={`faq-question-${i}`}
+                      aria-expanded={openFaq === i}
+                      aria-controls={`faq-answer-${i}`}
+                      onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    >
+                      {faq.question}
+                      <span
+                        className="text-xl text-[var(--accent)]"
+                        aria-hidden="true"
+                      >
+                        {openFaq === i ? "−" : "+"}
+                      </span>
+                    </button>
+                  </h3>
+                  <div
+                    id={`faq-answer-${i}`}
+                    role="region"
+                    aria-labelledby={`faq-question-${i}`}
+                    hidden={openFaq !== i}
+                  >
+                    <p className="px-5 pb-5 text-sm leading-relaxed text-[var(--text-secondary)]">
+                      {faq.answer}
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         </section>
-
-        <section id="pricing" className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
-          <motion.div
-            variants={riseIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6 }}
-            className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end"
+        <section id="contact" className={section}>
+          <div
+            className={`${panel} border-[var(--accent)]/40 bg-gradient-to-r from-[var(--accent)]/5 to-[var(--accent-tertiary)]/5 px-7 py-12 text-center`}
           >
-            <div className="space-y-3">
-              <p className="cyber-label text-[11px] text-[var(--accent)]">Pricing</p>
-              <h2 className="cyber-heading text-4xl font-bold text-white sm:text-5xl">Public pricing is not listed. Contact for commercial scope.</h2>
-            </div>
-            <div className="cyber-panel-sm inline-flex w-fit items-center border border-[var(--border)] bg-black/40 p-1">
-              <button
-                onClick={() => setAnnualBilling(false)}
-                className={`cyber-label px-4 py-2 text-[11px] transition ${
-                  !annualBilling ? "bg-[var(--accent)] text-[var(--background)]" : "text-[#a1a1aa]"
-                }`}
-              >
-                Request
-              </button>
-              <button
-                onClick={() => setAnnualBilling(true)}
-                className={`cyber-label px-4 py-2 text-[11px] transition ${
-                  annualBilling ? "bg-[var(--accent)] text-[var(--background)]" : "text-[#a1a1aa]"
-                }`}
-              >
-                Partner
-              </button>
-            </div>
-          </motion.div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {pricing.map((plan, index) => {
-              const price = annualBilling ? plan.yearly : plan.monthly;
-              const featured = plan.name === "Pilot";
-
-              return (
-                <motion.article
-                  key={plan.name}
-                  variants={riseIn}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.55, delay: index * 0.1 }}
-                  whileHover={{ y: -4 }}
-                  className={`cyber-panel border p-6 backdrop-blur-xl ${
-                    featured ? "border-[var(--accent)] bg-[var(--accent)]/10" : "border-[var(--border)] bg-[#12121a]/90"
-                  }`}
-                >
-                  <p className="cyber-heading text-sm text-[#c4c4cd]">{plan.name}</p>
-                  <p className="mt-2 text-3xl font-semibold text-white">{price}</p>
-                  <p className="mt-1 text-sm text-[#8b8b95]">Contact-led commercial discussion</p>
-                  <p className="mt-4 text-sm text-[#b4b4be]">{plan.description}</p>
-                  <ul className="mt-5 space-y-2 text-sm text-[#e4e4e7]">
-                    {plan.highlights.map((highlight) => (
-                      <li key={highlight}>&gt; {highlight}</li>
-                    ))}
-                  </ul>
-                  <button className="cyber-panel-sm cyber-button mt-7 w-full text-xs">{plan.cta}</button>
-                </motion.article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section id="faq" className="border-y border-[var(--border)] bg-[#0d0d15] py-24">
-          <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[0.9fr_1.1fr]">
-            <motion.div
-              variants={riseIn}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-4"
-            >
-              <p className="cyber-label text-[11px] text-[var(--accent-tertiary)]">FAQ</p>
-              <h2 className="cyber-heading text-4xl font-bold text-white sm:text-5xl">Answers sourced from public Chipiron Q&A.</h2>
-            </motion.div>
-
-            <div className="space-y-3">
-              {faqs.map((faq, index) => {
-                const isOpen = openFaq === index;
-                return (
-                  <motion.div
-                    key={faq.question}
-                    variants={riseIn}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.45, delay: index * 0.06 }}
-                    className="cyber-panel border border-[var(--border)] bg-[#12121a]/95"
-                  >
-                    <button
-                      onClick={() => setOpenFaq(isOpen ? null : index)}
-                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-                      aria-expanded={isOpen}
-                    >
-                      <span className="font-medium text-white">{faq.question}</span>
-                      <span className="text-[var(--accent)]">{isOpen ? "-" : "+"}</span>
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: "easeOut" }}
-                          className="overflow-hidden"
-                        >
-                          <p className="px-5 pb-5 text-sm text-[#b4b4be]">{faq.answer}</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section id="cta" className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
-          <motion.div
-            variants={riseIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6 }}
-            className="cyber-panel border border-[var(--accent)]/40 bg-gradient-to-r from-[#00ff88]/10 via-[#00d4ff]/10 to-[#ff00ff]/10 px-7 py-12 text-center shadow-[var(--box-shadow-neon)] backdrop-blur"
-          >
-            <h2 className="cyber-heading text-4xl font-bold text-white sm:text-5xl">Want verified information directly from the team?</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-[#d4d4d8]">
-              Connect with Chipiron through their official channels for technical briefs, commercial details, and
-              partnership conversations.
+            <p className="cyber-label mb-5 text-xs text-[var(--accent)]">
+              Start with the right fundamentals
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a href="https://www.linkedin.com/company/chipiron/" className="cyber-panel-sm cyber-button text-xs">
-                Open LinkedIn
-              </a>
-              <a href="https://www.chipiron.co/" className="cyber-panel-sm cyber-button cyber-button-secondary text-xs">
-                Visit Website
-              </a>
+            <h2 className="cyber-heading text-4xl font-semibold sm:text-5xl">
+              Start your semiconductor career with practical training.
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-[var(--text-secondary)]">
+              Explore a learning track, discuss your goals, and find out what to
+              learn next.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => inquire("Free demo")}
+                className="cyber-panel-sm cyber-button text-xs"
+              >
+                Book free demo
+              </button>
+              <button
+                onClick={() => inquire("Course inquiry")}
+                className="cyber-panel-sm cyber-button cyber-button-secondary text-xs"
+              >
+                Submit a course inquiry
+              </button>
+              <button
+                onClick={() => inquire("Counseling")}
+                className="cyber-panel-sm cyber-button text-xs"
+              >
+                Talk to a counselor
+              </button>
+              <button
+                onClick={() => inquire("Syllabus / brochure")}
+                className="cyber-panel-sm cyber-button cyber-button-secondary text-xs"
+              >
+                Request a brochure
+              </button>
             </div>
-          </motion.div>
+            <div className="contact-channels">
+              <div>
+                <p className="cyber-label">Email & phone</p>
+                <p>Verified contact details awaiting owner confirmation.</p>
+              </div>
+              <div>
+                <p className="cyber-label">WhatsApp counseling</p>
+                <p>
+                  Business number required before click-to-chat can be enabled.
+                </p>
+              </div>
+              <div>
+                <p className="cyber-label">Office & social links</p>
+                <p>
+                  Location and official profiles will be added when supplied.
+                </p>
+              </div>
+            </div>
+            <p className="mx-auto mt-6 max-w-2xl text-xs leading-relaxed text-[var(--text-secondary)]">
+              Preview: inquiry drafts only. Live demo scheduling, email,
+              WhatsApp, and approved brochures will be enabled when Chiprion
+              supplies its contact details and services.
+            </p>
+          </div>
         </section>
       </main>
-
-      <footer className="border-t border-[var(--border)] bg-[#0a0a0f]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 text-sm text-[#8b8b95] sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>
-            <span className="cyber-heading font-bold tracking-[0.2em] text-[#e4e4e7]">Chipiron</span> | Data used from
-            public LinkedIn and company website content.
-          </p>
-          <div className="flex flex-wrap gap-5">
-            <a href="https://www.linkedin.com/company/chipiron/" className="transition hover:text-[var(--accent)]">
-              LinkedIn
-            </a>
-            <a href="https://www.chipiron.co/" className="transition hover:text-[var(--accent)]">
-              Website
-            </a>
-            <a href="https://jobs.chipiron.co/connect" className="transition hover:text-[var(--accent)]">
-              Careers
-            </a>
+      <footer className="border-t border-[var(--border)] bg-[var(--background)]">
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
+          <div className="flex flex-col justify-between gap-6 sm:flex-row">
+            <div>
+              <a href="#" className="brand-name">
+                Chiprion
+              </a>
+              <p className="mt-3 text-sm text-[var(--text-secondary)]">
+                Practical VLSI & semiconductor training
+                <br />
+                for future chip engineers.
+              </p>
+            </div>
+            <nav
+              aria-label="Footer navigation"
+              className="flex flex-wrap gap-x-6 text-sm text-[var(--text-secondary)]"
+            >
+              {[
+                ["About Chiprion", "about"],
+                ["Courses", "courses"],
+                ["Learning tracks", "learning-tracks"],
+                ["Learning approach", "learning"],
+                ["Mentorship", "mentors"],
+                ["Student outcomes", "student-success"],
+                ["Careers", "careers"],
+                ["Resources", "resources"],
+                ["For colleges", "college-programs"],
+                ["Corporate training", "corporate-programs"],
+                ["Contact", "contact"],
+                ["Privacy notice", "privacy"],
+                ["Terms notice", "terms"],
+              ].map(([label, id]) => (
+                <a
+                  key={id}
+                  className="hover:text-[var(--accent)]"
+                  href={`#${id}`}
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </div>
+          <PreviewNotices />
+          <div className="mt-8 border-t border-[var(--border)] pt-5 text-xs text-[var(--text-secondary)]">
+            <p>
+              © {new Date().getFullYear()} Chiprion. Precision training for chip
+              engineers.
+            </p>
+            <p className="mt-3">
+              This is a website preview. Contact details, legal policies, and
+              live lead services are pending owner approval. No form data is
+              sent or stored on a server.
+            </p>
           </div>
         </div>
       </footer>
+      <InquiryDialog request={request} onClose={() => setRequest(null)} />
     </div>
   );
 }
