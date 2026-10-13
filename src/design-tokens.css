@@ -1,0 +1,24 @@
+:root {
+  color-scheme: dark;
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "JetBrains Mono", monospace;
+  --space-unit: 8px;
+  --corner-cut: 10px;
+  --background: #070b12;
+  --foreground: #e6edf5;
+  --card: #0d1420;
+  --muted: #121a28;
+  --muted-foreground: #9aa7b8;
+  --text-secondary: #9aa7b8;
+  --accent: #00e585;
+  --accent-secondary: #22d3ee;
+  --accent-tertiary: #22d3ee;
+  --accent-purple: #a855f7;
+  --border: #1e2a3a;
+  --input: #0d1420;
+  --ring: #00e585;
+  --destructive: #ff4d6d;
+  --box-shadow-neon: 0 0 20px #00e5850d, inset 0 0 16px #00e58505;
+  --box-shadow-neon-sm: 0 0 12px #00e58512;
+}
